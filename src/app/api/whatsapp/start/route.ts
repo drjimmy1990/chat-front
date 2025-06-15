@@ -38,14 +38,14 @@ export async function POST() {
     return NextResponse.json({ status: 'success', message: 'QR code received', qrCode: qr });
 
   } catch (error: any) {
-    // The type of the caught error is not guaranteed, so we use 'any' and log the message.
+    // Log the error message, ensuring it's treated as an Error type.
     console.error('Error starting WhatsApp bot:', (error as Error).message);
     return NextResponse.json({ status: 'error', message: error.message || 'Failed to start WhatsApp bot.' }, { status: 500 });
   }
 }
 
 // Add a GET handler to potentially retrieve the last generated QR code
-// or the current status if needed by the frontend polling
-export async function GET(req: NextRequest) {
+// or the current status if needed by the frontend polling. The 'req' parameter is not currently used.
+export async function GET() {
   return NextResponse.json({ status: 'info', message: 'Check bot status using the /api/whatsapp/health endpoint.' }, { status: 200 });
 }
