@@ -13,13 +13,36 @@ interface AdminPanelProps {
 const AdminPanel: React.FC<AdminPanelProps> = ({ onBackupWhatsappNumbers }) => {
   const [backupFormat, setBackupFormat] = useState<BackupFormat>('csv');
   const [showBackupOptions, setShowBackupOptions] = useState(false);
+  const [whatsappHealthStatus, setWhatsappHealthStatus] = useState<string | null>(null);
+  const [qrCodeData, setQrCodeData] = useState<string | null>(null);
+
 
   const handleFormatChange = (event: SelectChangeEvent<BackupFormat>) => {
+
     setBackupFormat(event.target.value as BackupFormat);
   };
 
   const handleDownloadBackup = () => {
     onBackupWhatsappNumbers(backupFormat);
+  };
+
+  const checkWhatsappBotHealth = async () => {
+    try {
+      const response = await fetch('/api/whatsapp/health');
+      const data = await response.json();
+      setWhatsappHealthStatus(data.status);
+    } catch (error) {
+      console.error('Error checking WhatsApp bot health:', error);
+      setWhatsappHealthStatus('Error checking status');
+    }
+  };
+
+  const startWhatsappBotAndGetQrCode = async () => {
+    try {
+      const response = await fetch('/api/whatsapp/start', { method: 'POST' });
+      const data = await response.json();
+      setQrCodeData(data.qrCodeData || null); // Assuming the response contains qrCodeData
+    } catch (error) { console.error('Error starting WhatsApp bot:', error); }
   };
 
   return (
@@ -69,9 +92,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBackupWhatsappNumbers }) => {
         </Box>
       )}
 
-      <Button variant="outlined" sx={{ mt: 2 }} disabled>
-        Future Feature
+      {/* New WhatsApp Bot Buttons */}
+      <Button variant="contained" sx={{ mt: 2 }} onClick={checkWhatsappBotHealth}>
+        Check WhatsApp Bot Health
       </Button>
+      {whatsappHealthStatus !== null && (
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          Bot Status: {whatsappHealthStatus}
+        </Typography>
+      )}
+
+      <Button variant="contained" sx={{ mt: 1 }} onClick={startWhatsappBotAndGetQrCode}>
+        Start WhatsApp Bot and Get QR Code
+      </Button>
+      {qrCodeData && (
+        <img src={qrCodeData} alt="WhatsApp QR Code" style={{ width: '100%', height: 'auto', marginTop: '10px' }} />
+      )}
     </Box>
   );
 };
