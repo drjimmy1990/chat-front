@@ -13,13 +13,26 @@ interface AdminPanelProps {
 const AdminPanel: React.FC<AdminPanelProps> = ({ onBackupWhatsappNumbers }) => {
   const [backupFormat, setBackupFormat] = useState<BackupFormat>('csv');
   const [showBackupOptions, setShowBackupOptions] = useState(false);
+  const [whatsappHealthStatus, setWhatsappHealthStatus] = useState<string | null>(null);
 
   const handleFormatChange = (event: SelectChangeEvent<BackupFormat>) => {
+
     setBackupFormat(event.target.value as BackupFormat);
   };
 
   const handleDownloadBackup = () => {
     onBackupWhatsappNumbers(backupFormat);
+  };
+
+  const checkWhatsappBotHealth = async () => {
+    try {
+      const response = await fetch('/api/whatsapp/health');
+      const data = await response.json();
+      setWhatsappHealthStatus(data.status);
+    } catch (error) {
+      console.error('Error checking WhatsApp bot health:', error);
+      setWhatsappHealthStatus('Error checking status');
+    }
   };
 
   return (
@@ -69,6 +82,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBackupWhatsappNumbers }) => {
         </Box>
       )}
 
+      {/* New WhatsApp Bot Buttons */}
+      <Button variant="contained" sx={{ mt: 2 }} onClick={checkWhatsappBotHealth}>
+        Check WhatsApp Bot Health
+      </Button>
+      {whatsappHealthStatus !== null && (
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          Bot Status: {whatsappHealthStatus}
+        </Typography>
+      )}
+
+      {/* Original Future Feature button (can keep or remove) */}
       <Button variant="outlined" sx={{ mt: 2 }} disabled>
         Future Feature
       </Button>
