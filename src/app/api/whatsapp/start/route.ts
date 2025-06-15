@@ -37,7 +37,7 @@ export async function POST() {
 
     return NextResponse.json({ status: 'success', message: 'QR code received', qrCode: qr });
 
-  } catch (error: any) {
+  } catch (error) {
     // Log the error message
     console.error('Error starting WhatsApp bot:', error instanceof Error ? error.message : error);
     return NextResponse.json({ status: 'error', message: error instanceof Error ? error.message : 'Failed to start WhatsApp bot.' }, { status: 500 });
