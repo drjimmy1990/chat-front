@@ -14,8 +14,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBackupWhatsappNumbers }) => {
   const [backupFormat, setBackupFormat] = useState<BackupFormat>('csv');
   const [showBackupOptions, setShowBackupOptions] = useState(false);
   const [whatsappHealthStatus, setWhatsappHealthStatus] = useState<string | null>(null);
-  const [qrCodeData, setQrCodeData] = useState<string | null>(null);
-
 
   const handleFormatChange = (event: SelectChangeEvent<BackupFormat>) => {
 
@@ -35,14 +33,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBackupWhatsappNumbers }) => {
       console.error('Error checking WhatsApp bot health:', error);
       setWhatsappHealthStatus('Error checking status');
     }
-  };
-
-  const startWhatsappBotAndGetQrCode = async () => {
-    try {
-      const response = await fetch('/api/whatsapp/start', { method: 'POST' });
-      const data = await response.json();
-      setQrCodeData(data.qrCodeData || null); // Assuming the response contains qrCodeData
-    } catch (error) { console.error('Error starting WhatsApp bot:', error); }
   };
 
   return (
@@ -101,14 +91,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBackupWhatsappNumbers }) => {
           Bot Status: {whatsappHealthStatus}
         </Typography>
       )}
-
-      {/* Temporarily commented out until multi-session is supported in the bot */}
-      {/* <Button variant="contained" sx={{ mt: 1 }} onClick={startWhatsappBotAndGetQrCode}>
-        Start WhatsApp Bot and Get QR Code
-      </Button>
-      {qrCodeData && (
-        <img src={qrCodeData} alt="WhatsApp QR Code" style={{ width: '100%', height: 'auto', marginTop: '10px' }} />
-      )} */}
 
       {/* Original Future Feature button (can keep or remove) */}
       <Button variant="outlined" sx={{ mt: 2 }} disabled>

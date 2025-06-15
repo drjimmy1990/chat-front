@@ -4,9 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 // Read environment variable for bot API URL
 const WHATSAPP_BOT_API_URL = process.env.WHATSAPP_BOT_API_URL;
 
+// Handler for POST requests to start the WhatsApp bot and get QR code
 export async function POST() {
-  const WHATSAPP_BOT_API_URL = process.env.WHATSAPP_BOT_API_URL;
-
   if (!WHATSAPP_BOT_API_URL) {
     console.error('WHATSAPP_BOT_API_URL environment variable is not set.');
     return NextResponse.json({ status: 'error', message: 'WhatsApp bot API URL is not configured.' }, { status: 500 });
@@ -39,7 +38,7 @@ export async function POST() {
     return NextResponse.json({ status: 'success', message: 'QR code received', qrCode: qr });
 
   } catch (error: any) {
-    console.error('Error starting WhatsApp bot:', error);
+    console.error('Error starting WhatsApp bot:', error.message);
     return NextResponse.json({ status: 'error', message: error.message || 'Failed to start WhatsApp bot.' }, { status: 500 });
   }
 }
@@ -47,5 +46,5 @@ export async function POST() {
 // Add a GET handler to potentially retrieve the last generated QR code
 // or the current status if needed by the frontend polling
 export async function GET(req: NextRequest) {
-    return NextResponse.json({ status: 'info', message: 'Check bot status using the /api/whatsapp/health endpoint.' });
+  return NextResponse.json({ status: 'info', message: 'Check bot status using the /api/whatsapp/health endpoint.' });
 }
