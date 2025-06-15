@@ -102,12 +102,18 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBackupWhatsappNumbers }) => {
         </Typography>
       )}
 
-      <Button variant="contained" sx={{ mt: 1 }} onClick={startWhatsappBotAndGetQrCode}>
+      {/* Temporarily commented out until multi-session is supported in the bot */}
+      {/* <Button variant="contained" sx={{ mt: 1 }} onClick={startWhatsappBotAndGetQrCode}>
         Start WhatsApp Bot and Get QR Code
       </Button>
       {qrCodeData && (
         <img src={qrCodeData} alt="WhatsApp QR Code" style={{ width: '100%', height: 'auto', marginTop: '10px' }} />
-      )}
+      )} */}
+
+      {/* Original Future Feature button (can keep or remove) */}
+      <Button variant="outlined" sx={{ mt: 2 }} disabled>
+        Future Feature
+      </Button>
     </Box>
   );
 };

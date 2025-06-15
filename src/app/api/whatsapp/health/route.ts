@@ -1,8 +1,6 @@
 // src/app/api/whatsapp/health/route.ts
 import { NextResponse } from 'next/server';
 
-const WHATSAPP_BOT_HEALTH_URL = 'http://localhost:3001/health';
-
 const whatsappBotApiUrl = process.env.WHATSAPP_BOT_API_URL;
 
 export async function GET() {
@@ -23,7 +21,7 @@ export async function GET() {
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     console.error(`Error fetching WhatsApp bot health from ${whatsappBotApiUrl}/health:`, error);
     return NextResponse.json({ status: 'error', message: `Failed to connect to WhatsApp bot health endpoint at ${whatsappBotApiUrl}/health.` }, { status: 500 });
   }
