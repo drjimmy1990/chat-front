@@ -187,4 +187,4 @@ const ContactList: React.FC<ContactListProps> = ({
   );
 };
 
-export default ContactList;
+export default React.memo(ContactList);
