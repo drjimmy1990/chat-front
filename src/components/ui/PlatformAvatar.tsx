@@ -1,49 +1,86 @@
 // src/components/ui/PlatformAvatar.tsx
+'use client';
+
 import React from 'react';
-import Avatar from '@mui/material/Avatar';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import QuestionMarkIcon from '@mui/icons-material/QuestionMark';
+import { motion } from 'framer-motion';
+import { Platform } from '@/lib/types';
+import { MessageCircle, Facebook, Instagram, HelpCircle } from 'lucide-react';
 
 interface PlatformAvatarProps {
-  platform: 'whatsapp' | 'facebook' | 'instagram' | string;
-  sx?: object;
+  platform: Platform;
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
 }
 
-const PlatformAvatar: React.FC<PlatformAvatarProps> = ({ platform, sx }) => {
-  const getPlatformStyle = () => {
+const PlatformAvatar: React.FC<PlatformAvatarProps> = ({ 
+  platform, 
+  size = 'md',
+  className = '' 
+}) => {
+  const sizeClasses = {
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-12 h-12'
+  };
+
+  const iconSizes = {
+    sm: 'w-4 h-4',
+    md: 'w-5 h-5',
+    lg: 'w-6 h-6'
+  };
+
+  const getPlatformConfig = () => {
     switch (platform) {
       case 'whatsapp':
         return {
-          bgcolor: '#25D366',
-          icon: <WhatsAppIcon />,
+          bgColor: 'bg-green-500',
+          icon: <MessageCircle className={iconSizes[size]} />,
+          hoverColor: 'hover:bg-green-600'
         };
       case 'facebook':
         return {
-          bgcolor: '#1877F2',
-          icon: <FacebookIcon />,
+          bgColor: 'bg-blue-600',
+          icon: <Facebook className={iconSizes[size]} />,
+          hoverColor: 'hover:bg-blue-700'
         };
       case 'instagram':
         return {
-          bgcolor: '#E4405F',
-          icon: <InstagramIcon />,
+          bgColor: 'bg-pink-500',
+          icon: <Instagram className={iconSizes[size]} />,
+          hoverColor: 'hover:bg-pink-600'
         };
       default:
         return {
-          bgcolor: '#bdbdbd',
-          icon: <QuestionMarkIcon />,
+          bgColor: 'bg-gray-500',
+          icon: <HelpCircle className={iconSizes[size]} />,
+          hoverColor: 'hover:bg-gray-600'
         };
     }
   };
 
-  const { bgcolor, icon } = getPlatformStyle();
+  const { bgColor, icon, hoverColor } = getPlatformConfig();
 
   return (
-    <Avatar sx={{ ...sx, bgcolor }}>
+    <motion.div
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className={`
+        ${sizeClasses[size]} 
+        ${bgColor} 
+        ${hoverColor}
+        rounded-full 
+        flex 
+        items-center 
+        justify-center 
+        text-white 
+        transition-colors 
+        duration-200
+        ${className}
+      `}
+    >
       {icon}
-    </Avatar>
+    </motion.div>
   );
 };
 
-export default PlatformAvatar;
+export default React.memo(PlatformAvatar);

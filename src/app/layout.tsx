@@ -1,18 +1,16 @@
 // src/app/layout.tsx
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { AppRouterCacheProvider } from '@mui/material-nextjs/v13-appRouter';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import theme from '@/theme';
 import QueryProvider from '@/providers/QueryProvider';
+import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import Toast from '@/components/ui/Toast';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'N8N AI Chat Dashboard',
-  description: 'Manage your AI-powered conversations.',
+  title: 'AI Chat Dashboard',
+  description: 'Modern dashboard for managing AI-powered conversations across multiple platforms.',
 };
 
 export default function RootLayout({
@@ -23,14 +21,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AppRouterCacheProvider>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <QueryProvider>
+        <ErrorBoundary>
+          <QueryProvider>
+            <Toast />
+            <div className="min-h-screen bg-background text-foreground">
               {children}
-            </QueryProvider>
-          </ThemeProvider>
-        </AppRouterCacheProvider>
+            </div>
+          </QueryProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );
