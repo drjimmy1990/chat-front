@@ -2,89 +2,50 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useCallback } from 'react';
 import * as api from '@/lib/api';
-import { Contact } from '@/lib/types';
-import { QUERY_KEYS } from '@/lib/constants';
 import { supabase } from '@/lib/supabaseClient';
+import { useEffect } from 'react';
 
 export const useChatContacts = () => {
   const queryClient = useQueryClient();
 
-  // Optimized query with better error handling
-  const { 
-    data: contacts = [], 
-    isLoading: isLoadingContacts,
-    error: contactsError 
-  } = useQuery<Contact[]>({
-    queryKey: QUERY_KEYS.CONTACTS,
+  // --- QUERIES ---
+  const { data: contacts = [], isLoading: isLoadingContacts } = useQuery<api.Contact[]>({
+    queryKey: ['contacts'],
     queryFn: api.getContacts,
-    staleTime: 30000, // 30 seconds
-    gcTime: 300000, // 5 minutes
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-  // Optimistic updates for better UX
+  // --- MUTATIONS ---
+  // A mutation for updating the name
   const updateNameMutation = useMutation({
     mutationFn: api.updateContactName,
-    onMutate: async ({ contactId, newName }) => {
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.CONTACTS });
-      
-      const previousContacts = queryClient.getQueryData<Contact[]>(QUERY_KEYS.CONTACTS);
-      
-      queryClient.setQueryData<Contact[]>(QUERY_KEYS.CONTACTS, (old) =>
-        old?.map(contact =>
-          contact.id === contactId ? { ...contact, name: newName } : contact
-        ) || []
-      );
-      
-      return { previousContacts };
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contacts'] });
     },
-    onError: (err, variables, context) => {
-      if (context?.previousContacts) {
-        queryClient.setQueryData(QUERY_KEYS.CONTACTS, context.previousContacts);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CONTACTS });
-    },
+    // We can add onMutate for optimistic updates later if needed
   });
 
+  // A mutation for toggling AI status
   const toggleAiMutation = useMutation({
     mutationFn: api.toggleAiStatus,
-    onMutate: async ({ contactId, newStatus }) => {
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.CONTACTS });
-      
-      const previousContacts = queryClient.getQueryData<Contact[]>(QUERY_KEYS.CONTACTS);
-      
-      queryClient.setQueryData<Contact[]>(QUERY_KEYS.CONTACTS, (old) =>
-        old?.map(contact =>
-          contact.id === contactId ? { ...contact, ai_enabled: newStatus } : contact
-        ) || []
-      );
-      
-      return { previousContacts };
-    },
-    onError: (err, variables, context) => {
-      if (context?.previousContacts) {
-        queryClient.setQueryData(QUERY_KEYS.CONTACTS, context.previousContacts);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CONTACTS });
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contacts'] });
     },
   });
   
+  // A mutation for deleting a contact
   const deleteContactMutation = useMutation({
     mutationFn: api.deleteContact,
     onSuccess: (data, contactId) => {
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CONTACTS });
-      queryClient.removeQueries({ queryKey: QUERY_KEYS.MESSAGES(contactId) });
+        // Invalidate queries to refetch the list
+        queryClient.invalidateQueries({ queryKey: ['contacts'] });
+        // Also remove any cached messages for the deleted contact
+        queryClient.removeQueries({ queryKey: ['messages', contactId] });
     }
   });
 
-  // Realtime subscriptions with better error handling
+
+  // --- REALTIME ---
   useEffect(() => {
     const channel = supabase
       .channel('public-contacts-changes')
@@ -93,44 +54,22 @@ export const useChatContacts = () => {
         { event: '*', schema: 'public', table: 'contacts' },
         (payload) => {
           console.log('Realtime contact change received:', payload);
-          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.CONTACTS });
+          queryClient.invalidateQueries({ queryKey: ['contacts'] });
         }
       )
-      .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to contacts changes');
-        } else if (status === 'CHANNEL_ERROR') {
-          console.error('Error subscribing to contacts changes');
-        }
-      });
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
   }, [queryClient]);
-
-  // Memoized mutation functions to prevent unnecessary re-renders
-  const updateName = useCallback(
-    (params: { contactId: string; newName: string }) => updateNameMutation.mutate(params),
-    [updateNameMutation]
-  );
-
-  const toggleAi = useCallback(
-    (params: { contactId: string; newStatus: boolean }) => toggleAiMutation.mutate(params),
-    [toggleAiMutation]
-  );
-
-  const deleteContact = useCallback(
-    (contactId: string) => deleteContactMutation.mutate(contactId),
-    [deleteContactMutation]
-  );
+  
 
   return {
     contacts,
     isLoadingContacts,
-    contactsError,
-    updateName,
-    toggleAi,
-    deleteContact,
+    updateName: updateNameMutation.mutate,
+    toggleAi: toggleAiMutation.mutate,
+    deleteContact: deleteContactMutation.mutate,
   };
 };
